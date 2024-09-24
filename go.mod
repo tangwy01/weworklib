@@ -1,4 +1,4 @@
-module github.com/qinyuanmao/weworklib
+module github.com/tangwy01/weworklib
 
 go 1.15
 
