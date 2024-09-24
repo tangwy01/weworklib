@@ -68,6 +68,7 @@ func (this *Client) GetChatList(seq uint64, limit uint64, proxy string, password
 			}
 			message.MediaData = mediaData.Data
 		}
+		message.Seq = chatData.Seq
 		messages = append(messages, *message)
 	}
 	return
