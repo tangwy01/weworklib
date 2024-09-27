@@ -61,6 +61,9 @@ func (this *Client) GetChatList(seq uint64, limit uint64, proxy string, password
 			return
 		}
 		if v, exists := message.Content["sdkfileid"]; exists && v != nil {
+			if message.MsgType == MEETING_VOICE_CALL_MSG || message.MsgType == VOIP_DOC_SHARE_MSG {
+				continue
+			}
 			mediaData, getMediaErr := this.GetMediaData("", v.(string), proxy, password, timeout)
 			if getMediaErr != nil {
 				err = fmt.Errorf("获取图片资源文件失败：%v", getMediaErr)
