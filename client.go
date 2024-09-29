@@ -9,8 +9,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/wenzhenxi/gorsa"
+	"strconv"
 	"unsafe"
+
+	"github.com/wenzhenxi/gorsa"
 )
 
 type Client struct {
@@ -74,6 +76,8 @@ func (this *Client) GetChatList(seq uint64, limit uint64, proxy string, password
 					err = fmt.Errorf("获取图片资源文件失败：%v", getMediaErr)
 					return
 				}
+				fmt.Println("OutIndexBuf:" + mediaData.OutIndexBuf)
+				fmt.Println("IsFinish:" + strconv.FormatBool(isFinish))
 				buffer.Write(mediaData.Data)
 				isFinish = mediaData.IsFinish
 				indexBuf = mediaData.OutIndexBuf
