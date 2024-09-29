@@ -9,7 +9,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"strconv"
+	"time"
 	"unsafe"
 
 	"github.com/wenzhenxi/gorsa"
@@ -76,14 +76,16 @@ func (this *Client) GetChatList(seq uint64, limit uint64, proxy string, password
 				if index > maxDeppth {
 					return nil, fmt.Errorf("获取图片资源文件失败：超过最大拉取深度")
 				}
-
+				fmt.Println("start:" + time.Now().Format("2006-01-02 15:04:05"))
 				mediaData, getMediaErr := this.GetMediaData(indexBuf, v.(string), proxy, password, timeout)
 				if getMediaErr != nil {
 					err = fmt.Errorf("获取图片资源文件失败：%v", getMediaErr)
 					return
 				}
-				fmt.Println("OutIndexBuf:" + mediaData.OutIndexBuf)
-				fmt.Println("IsFinish:" + strconv.FormatBool(isFinish))
+				fmt.Println("end:" + time.Now().Format("2006-01-02 15:04:05"))
+
+				// fmt.Println("OutIndexBuf:" + mediaData.OutIndexBuf)
+				// fmt.Println("IsFinish:" + strconv.FormatBool(isFinish))
 				buffer.Write(mediaData.Data)
 				isFinish = mediaData.IsFinish
 				indexBuf = mediaData.OutIndexBuf
