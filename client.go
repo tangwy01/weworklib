@@ -6,11 +6,11 @@ package weworklib
 // #include "WeWorkFinanceSdk_C.h"
 import "C"
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"unsafe"
-
 	"github.com/wenzhenxi/gorsa"
+	"unsafe"
 )
 
 type Client struct {
@@ -64,12 +64,21 @@ func (this *Client) GetChatList(seq uint64, limit uint64, proxy string, password
 			if message.MsgType == MEETING_VOICE_CALL_MSG || message.MsgType == VOIP_DOC_SHARE_MSG {
 				continue
 			}
-			mediaData, getMediaErr := this.GetMediaData("", v.(string), proxy, password, timeout)
-			if getMediaErr != nil {
-				err = fmt.Errorf("获取图片资源文件失败：%v", getMediaErr)
-				return
+			isFinish := false
+			buffer := bytes.Buffer{}
+			indexBuf := ""
+
+			for !isFinish {
+				mediaData, getMediaErr := this.GetMediaData(indexBuf, v.(string), proxy, password, timeout)
+				if getMediaErr != nil {
+					err = fmt.Errorf("获取图片资源文件失败：%v", getMediaErr)
+					return
+				}
+				buffer.Write(mediaData.Data)
+				isFinish = mediaData.IsFinish
+				indexBuf = mediaData.OutIndexBuf
 			}
-			message.MediaData = mediaData.Data
+			message.MediaData = buffer.Bytes()
 		}
 		message.Seq = chatData.Seq
 		messages = append(messages, *message)
@@ -185,6 +194,7 @@ func (this *Client) GetMediaData(indexBuf string, sdkFileId string, proxy string
 	if ret != 0 {
 		return nil, NewSDKErr(ret)
 	}
+
 	return &MediaData{
 		OutIndexBuf: C.GoString(C.GetOutIndexBuf(mediaDataC)),
 		Data:        C.GoBytes(unsafe.Pointer(C.GetData(mediaDataC)), C.GetDataLen(mediaDataC)),
