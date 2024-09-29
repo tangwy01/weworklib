@@ -56,6 +56,8 @@ func (this *Client) GetChatList(seq uint64, limit uint64, proxy string, password
 		return
 	}
 	messages = make([]CommonMessage, 0)
+	//企微 最大上传文件10GB,每次拉取文件大小512k
+	maxDeppth := 20480
 	for _, chatData := range chatDatas {
 		message, decryptErr := this.DecryptData(chatData.PublickeyVer, chatData.EncryptRandomKey, chatData.EncryptChatMsg)
 		if decryptErr != nil {
@@ -68,9 +70,13 @@ func (this *Client) GetChatList(seq uint64, limit uint64, proxy string, password
 			}
 			isFinish := false
 			buffer := bytes.Buffer{}
+			index := 0
 			indexBuf := ""
-
 			for !isFinish {
+				if index > maxDeppth {
+					return nil, fmt.Errorf("获取图片资源文件失败：超过最大拉取深度")
+				}
+
 				mediaData, getMediaErr := this.GetMediaData(indexBuf, v.(string), proxy, password, timeout)
 				if getMediaErr != nil {
 					err = fmt.Errorf("获取图片资源文件失败：%v", getMediaErr)
@@ -81,6 +87,7 @@ func (this *Client) GetChatList(seq uint64, limit uint64, proxy string, password
 				buffer.Write(mediaData.Data)
 				isFinish = mediaData.IsFinish
 				indexBuf = mediaData.OutIndexBuf
+				index++
 			}
 			message.MediaData = buffer.Bytes()
 		}
